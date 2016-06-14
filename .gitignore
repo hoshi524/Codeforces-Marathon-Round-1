@@ -2,4 +2,6 @@
 *.o
 *.exe
 *.class
+*.swp
+*.out
 tempfile

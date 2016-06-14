@@ -42,7 +42,47 @@ void solve(int a) {
 	}
 }
 
-int main (void) {
+void test() {
+	char correct[n];
+	for(int i = 0; i < n; ++i) {
+		correct[i] = one_bit(gen);
+	}
+	memset(value, 0, sizeof(value));
+	for (int i = 0; i < x; ++i) {
+		if(i == 0) {
+			for (int p = 0; p < n; ++p) {
+				buf[i][p] = one_bit(gen);
+			}
+		} else {
+			solve(i);
+		}
+		buf[i][n] = '\0';
+		score[i] = 0;
+		for(int w = 0; score[i] < n && w < k; ++score[i]) {
+			if(correct[score[i]] != buf[i][score[i]]) ++w;
+		}
+		--score[i];
+	}
+	double cs = 0, cc = 0;
+	double bs = 0, bc = 0;
+	for(int i = 0; i < n; ++i){
+		int ok = correct[i] == buf[x-1][i];
+		// cout<<ok<<" "<<value[i]<<endl;
+		if(ok){
+			if(abs(value[i]) + 1 < inf){
+				cs += abs(value[i]);
+				++cc;
+			}
+		}else{
+			bs += abs(value[i]);
+			++bc;
+		}
+	}
+	cout<<(cs/cc)<<endl;
+	cout<<(bs/bc)<<endl;
+}
+
+void submit() {
 	memset(value, 0, sizeof(value));
 	for (int i = 0; i < x; ++i) {
 		if(i == 0) {
@@ -58,5 +98,10 @@ int main (void) {
 		scanf("%d", &score[i]);
 		--score[i];
 	}
+}
+
+int main(void) {
+	// submit();
+	test();
 	return 0;
 }
