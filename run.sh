@@ -13,6 +13,11 @@ export INTERACTOR="tools/interactor"
 #--- 3. Solution
 #--- 3.1. Languages compiled to native code:
 #--- compile the solution in solutions/ and uncomment the next line:
+g++ -o3 --std=c++11 solutions/solution.cpp -o solutions/solution
+if [ $? -ne 0 ] ; then
+	exit 1
+fi
+
 export SOLUTION="solutions/solution"
 #--- 3.2. Python: just uncomment the next line:
 #export SOLUTION="python solutions/solution.py"
