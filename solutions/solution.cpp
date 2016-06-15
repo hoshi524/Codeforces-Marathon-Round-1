@@ -12,7 +12,6 @@ int score[x];
 double value[n];
 mt19937 gen (12345);
 uniform_int_distribution <> one_bit ('0', '1');
-uniform_int_distribution <> rand5000(0, n);
 
 void solve(int a) {
 	int p = a - 1;
@@ -34,9 +33,21 @@ void solve(int a) {
 		buf[a][i] = value[i] > 0  ? '0' : '1';
 	}
 	if(a + 1 < x) {
+		uniform_int_distribution <> randp(0, score[p]);
+		/*
 		for(int i = 0; i < n; ++i) {
-			int j = rand5000(gen);
+			int j = randp(gen);
 			if(abs(value[j]) + 1 >= inf) continue;
+			buf[a][j] = value[j] > 0 ? '1' : '0';
+		}
+		*/
+		bool u[n];
+		memset(u, false, sizeof(u));
+		for(int i = 0; i < k; ) {
+			int j = randp(gen);
+			if(abs(value[j]) + 1 >= inf || u[j]) continue;
+			++i;
+			u[j] = true;
 			buf[a][j] = value[j] > 0 ? '1' : '0';
 		}
 	}
@@ -44,42 +55,51 @@ void solve(int a) {
 
 void test() {
 	char correct[n];
-	for(int i = 0; i < n; ++i) {
-		correct[i] = one_bit(gen);
-	}
-	memset(value, 0, sizeof(value));
-	for (int i = 0; i < x; ++i) {
-		if(i == 0) {
-			for (int p = 0; p < n; ++p) {
-				buf[i][p] = one_bit(gen);
+	int sum = 0, testcase = 100;
+	for(int z = 0; z < testcase; ++z) {
+		for(int i = 0; i < n; ++i) {
+			correct[i] = one_bit(gen);
+		}
+		memset(value, 0, sizeof(value));
+		int maxscore = 0;
+		for (int i = 0; i < x; ++i) {
+			if(i == 0) {
+				for (int p = 0; p < n; ++p) {
+					buf[i][p] = one_bit(gen);
+				}
+			} else {
+				solve(i);
 			}
-		} else {
-			solve(i);
-		}
-		buf[i][n] = '\0';
-		score[i] = 0;
-		for(int w = 0; score[i] < n && w < k; ++score[i]) {
-			if(correct[score[i]] != buf[i][score[i]]) ++w;
-		}
-		--score[i];
-	}
-	double cs = 0, cc = 0;
-	double bs = 0, bc = 0;
-	for(int i = 0; i < n; ++i){
-		int ok = correct[i] == buf[x-1][i];
-		// cout<<ok<<" "<<value[i]<<endl;
-		if(ok){
-			if(abs(value[i]) + 1 < inf){
-				cs += abs(value[i]);
-				++cc;
+			buf[i][n] = '\0';
+			score[i] = 0;
+			for(int w = 0; score[i] < n && w < k; ++score[i]) {
+				if(correct[score[i]] != buf[i][score[i]]) ++w;
 			}
-		}else{
-			bs += abs(value[i]);
-			++bc;
+			--score[i];
+			if(maxscore < score[i]) maxscore = score[i];
+		}
+		sum += maxscore;
+		if(false){
+			double cs = 0, cc = 0;
+			double bs = 0, bc = 0;
+			for(int i = 0; i < n; ++i){
+				int ok = correct[i] == buf[x-1][i];
+				// cout<<ok<<" "<<value[i]<<endl;
+				if(ok){
+					if(abs(value[i]) + 1 < inf){
+						cs += abs(value[i]);
+						++cc;
+					}
+				}else{
+					bs += abs(value[i]);
+					++bc;
+				}
+			}
+			cout<<(cs/cc)<<endl;
+			cout<<(bs/bc)<<endl;
 		}
 	}
-	cout<<(cs/cc)<<endl;
-	cout<<(bs/bc)<<endl;
+	cout<<"avg : "<<((double) sum / testcase)<<endl;
 }
 
 void submit() {
@@ -95,7 +115,7 @@ void submit() {
 		buf[i][n] = '\0';
 		printf("%s\n", buf[i]);
 		fflush(stdout);
-		scanf("%d", &score[i]);
+		int z = scanf("%d", &score[i]);
 		--score[i];
 	}
 }
