@@ -9,7 +9,7 @@ int const x =  100;
 
 char buf[x][n+1];
 int score[x];
-double value[n];
+int value[n];
 mt19937 gen (12345);
 uniform_int_distribution <> one_bit ('0', '1');
 
@@ -21,9 +21,9 @@ void solve(int a) {
 		for(int j = 0; j < ms; ++j) {
 			if(buf[i][j] != buf[p][j]) ++diff;
 		}
-		double v = (double) abs(score[i] - score[p]) / diff;
+		int v = abs(score[i] - score[p]) * k / diff;
 		for(int j = 0; j < ms; ++j) {
-			if(buf[i][j] == buf[p][j] || abs(value[j]) + 1 >= inf) continue;
+			if(buf[i][j] == buf[p][j] || abs(value[j]) == inf) continue;
 			if(((score[i] < score[p]) + (buf[i][j] == '0')) & 1) value[j] += v;
 			else value[j] -= v;
 		}
@@ -34,21 +34,113 @@ void solve(int a) {
 	}
 	if(a + 1 < x) {
 		uniform_int_distribution <> randp(0, score[p]);
-		/*
-		for(int i = 0; i < n; ++i) {
-			int j = randp(gen);
-			if(abs(value[j]) + 1 >= inf) continue;
-			buf[a][j] = value[j] > 0 ? '1' : '0';
-		}
-		*/
 		bool u[n];
 		memset(u, false, sizeof(u));
 		for(int i = 0; i < k; ) {
 			int j = randp(gen);
-			if(abs(value[j]) + 1 >= inf || u[j]) continue;
+			if(abs(value[j]) == inf || u[j]) continue;
 			++i;
 			u[j] = true;
 			buf[a][j] = value[j] > 0 ? '1' : '0';
+		}
+	}
+}
+
+void solve2(int a) {
+	int p = a - 1;
+	int vi[n],c0[n],c1[n];
+	memset(vi, 0, sizeof(vi));
+	memset(c0, 0, sizeof(c0));
+	memset(c1, 0, sizeof(c1));
+	for(int i = 0; i < a; ++i){
+		vi[score[i]] = buf[i][score[i]] == '0' ? -inf : inf;
+	}
+	for(int i = 0; i < n; ++i){
+		if(vi[i] == 0){
+			int s0 = 0, s1 = 0;
+			for(int j = 0; j < a; ++j){
+				if(score[j] < i)continue;
+				if(buf[j][i] == '0'){
+					s0 += score[j];
+					++c0[i];
+				}else{
+					s1 += score[j];
+					++c1[i];
+				}
+			}
+			if(c0[i] + c1[i] > 0){
+				vi[i] += s0 * c1[i] - s1 * c0[i];
+				vi[i] /= c0[i] + c1[i];
+			}
+		}
+		buf[a][i] = vi[i] > 0  ? '0' : '1';
+	}
+	if(a + 1 < x) {
+		uniform_int_distribution <> randp(0, score[p]);
+		bool u[n];
+		memset(u, false, sizeof(u));
+		for(int i = 0; i < k; ) {
+			int j = randp(gen);
+			if(abs(vi[j]) == inf || u[j]) continue;
+			++i;
+			u[j] = true;
+			buf[a][j] = vi[j] > 0 ? '1' : '0';
+			// buf[a][j] = c0[j] > c1[j] ? '1' : '0';
+		}
+	}
+}
+
+void solve3(int a) {
+	int p = a - 1;
+	value[score[p]] = buf[p][score[p]] == '0' ? -inf : inf;
+	for(int i = 0; i < p; ++i) {
+		int ms = min(score[i], score[p]), diff = 0;
+		for(int j = 0; j < ms; ++j) {
+			if(buf[i][j] != buf[p][j]) ++diff;
+		}
+		int v = abs(score[i] - score[p]) * k / diff;
+		for(int j = 0; j < ms; ++j) {
+			if(buf[i][j] == buf[p][j] || abs(value[j]) == inf) continue;
+			if(((score[i] < score[p]) + (buf[i][j] == '0')) & 1) value[j] += v;
+			else value[j] -= v;
+		}
+	}
+	
+	int vi[n];
+	memset(vi, 0, sizeof(vi));
+	for(int i = 0; i < a; ++i){
+		vi[score[i]] = buf[i][score[i]] == '0' ? -inf : inf;
+	}
+	for(int i = 0; i < n; ++i){
+		if(vi[i] == 0){
+			int s0 = 0, c0 = 0, s1 = 0, c1 = 0;
+			for(int j = 0; j < a; ++j){
+				if(buf[j][i] == '0'){
+					s0 += score[j];
+					++c0;
+				}else{
+					s1 += score[j];
+					++c1;
+				}
+			}
+			vi[i] += s0 * c1 - s1 * c0;
+			vi[i] /= a;
+		}
+	}
+
+	for(int i = 0; i < n; ++i) {
+		buf[a][i] = value[i] * 10 + vi[i] * 10 > 0  ? '0' : '1';
+	}
+	if(a + 1 < x) {
+		uniform_int_distribution <> randp(0, score[p]);
+		bool u[n];
+		memset(u, false, sizeof(u));
+		for(int i = 0; i < k; ) {
+			int j = randp(gen);
+			if(abs(value[j]) == inf || u[j]) continue;
+			++i;
+			u[j] = true;
+			buf[a][j] = buf[a][j] == '0' ? '1' : '0';
 		}
 	}
 }
@@ -68,7 +160,7 @@ void test() {
 					buf[i][p] = one_bit(gen);
 				}
 			} else {
-				solve(i);
+				solve2(i);
 			}
 			buf[i][n] = '\0';
 			score[i] = 0;
