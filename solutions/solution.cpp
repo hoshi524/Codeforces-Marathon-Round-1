@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int const inf = 0xffff;
+int const inf = 0xffffff;
 int const n = 5000;
 int const k = 2000;
 int const x =  100;
@@ -29,6 +29,51 @@ void solve(int a) {
 		}
 	}
 
+	for(int i = 0; i < n; ++i) {
+		buf[a][i] = value[i] > 0  ? '0' : '1';
+	}
+	if(a + 1 < x) {
+		uniform_int_distribution <> randp(0, score[p]);
+		bool u[n];
+		memset(u, false, sizeof(u));
+		for(int i = 0; i < k; ) {
+			int j = randp(gen);
+			if(abs(value[j]) == inf || u[j]) continue;
+			++i;
+			u[j] = true;
+			buf[a][j] = value[j] > 0 ? '1' : '0';
+		}
+	}
+}
+
+void solve4(int a) {
+	int p = a - 1;
+	value[score[p]] = buf[p][score[p]] == '0' ? -inf : inf;
+	for(int i = 0; i < p; ++i) {
+		int ms = min(score[i], score[p]), diff = 0;
+		for(int j = 0; j < ms; ++j) {
+			if(buf[i][j] != buf[p][j]) ++diff;
+		}
+		int v = abs(score[i] - score[p]) * k / diff;
+		for(int j = 0; j < ms; ++j) {
+			if(buf[i][j] == buf[p][j] || abs(value[j]) == inf) continue;
+			if(((score[i] < score[p]) + (buf[i][j] == '0')) & 1) value[j] += v;
+			else value[j] -= v;
+		}
+		int diffScore = abs(score[i] - score[p]) / 2;
+		int diffFail = (diff + diffScore) / 2;
+		int notDiff = ms - diff;
+		int notDiffFail = k - diffFail;
+		int notDiffSuccess = notDiff - notDiffFail;
+		if(notDiffSuccess < notDiffFail){
+			v = (notDiffFail - notDiffSuccess) * k / notDiff;
+			for(int j = 0; j < ms; ++j){
+				if(buf[i][j] != buf[p][j] || abs(value[j]) == inf) continue;
+				if(buf[i][j] == '1') value[j] += v;
+				else value[j] -= v;
+			}
+		}
+	}
 	for(int i = 0; i < n; ++i) {
 		buf[a][i] = value[i] > 0  ? '0' : '1';
 	}
@@ -160,7 +205,7 @@ void test() {
 					buf[i][p] = one_bit(gen);
 				}
 			} else {
-				solve2(i);
+				solve4(i);
 			}
 			buf[i][n] = '\0';
 			score[i] = 0;
@@ -171,7 +216,7 @@ void test() {
 			if(maxscore < score[i]) maxscore = score[i];
 		}
 		sum += maxscore;
-		if(false){
+		if(true){
 			double cs = 0, cc = 0;
 			double bs = 0, bc = 0;
 			for(int i = 0; i < n; ++i){
@@ -187,8 +232,7 @@ void test() {
 					++bc;
 				}
 			}
-			cout<<(cs/cc)<<endl;
-			cout<<(bs/bc)<<endl;
+			cout<<(cs/cc)<<" "<<(bs/bc)<<endl;
 		}
 	}
 	cout<<"avg : "<<((double) sum / testcase)<<endl;
